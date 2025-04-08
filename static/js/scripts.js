@@ -117,54 +117,6 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
 
       // Set recommendations HTML first, replacing the loading indicator
       resultsDiv.innerHTML = recHtml;
-
-      // --- Plot Handling ---
-      if (data.plot_html) {
-        // Create a temporary container in memory for the plot HTML to parse it
-        const plotContainer = document.createElement("div");
-        plotContainer.innerHTML = data.plot_html; // Put Plotly's generated HTML here
-
-        // Find the actual Plotly chart div (usually the first child element)
-        const chartDiv = plotContainer.firstElementChild; // Use firstElementChild to skip text nodes
-
-        // Find the script tag within the temporary container
-        const scriptTag = plotContainer.querySelector("script");
-
-        // Append the chart div to the results area if it exists
-        if (chartDiv && chartDiv.nodeType === Node.ELEMENT_NODE) {
-          // Optionally wrap the plot for spacing/styling
-          const plotWrapper = document.createElement("div");
-          plotWrapper.style.marginTop = "20px"; // Add some space above the plot
-          plotWrapper.appendChild(chartDiv); // Move the chart div into the wrapper
-          resultsDiv.appendChild(plotWrapper); // Add the wrapper (with chart) to the results area
-        } else {
-          console.warn("Plotly chart div not found in plot_html.");
-        }
-
-        // Find and execute the script tag if it exists
-        if (scriptTag) {
-          const newScript = document.createElement("script");
-          // Copy type attribute if exists
-          if (scriptTag.type) {
-            newScript.type = scriptTag.type;
-          }
-          // Set the script content using textContent
-          newScript.textContent = scriptTag.textContent;
-
-          // Append the new script to the document body to execute it,
-          // then immediately remove it to keep the DOM clean.
-          document.body
-            .appendChild(newScript)
-            .parentNode.removeChild(newScript);
-          console.log("Plotly script executed.");
-        } else {
-          console.warn("Plotly script tag not found in plot_html.");
-        }
-      } else {
-        console.warn("plot_html not found in response data.");
-        resultsDiv.innerHTML +=
-          "<p>Plot could not be generated or was not provided.</p>"; // Inform user
-      }
     })
     .catch((error) => {
       console.error("Error fetching/processing recommendations:", error);

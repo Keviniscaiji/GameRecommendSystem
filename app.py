@@ -114,93 +114,8 @@ def get_weighted_recommendations(game_id, df, index, top_n=10,w_description = 0.
     recommendations = sorted(recommendations, key=lambda x: x['Weighted_Score'], reverse=True)[:top_n]
     return recommendations
 
-def generate_3d_plot(df, query_idx, recs):
-    indices = [query_idx] + [r['Index'] for r in recs]
-    vectors = [df.iloc[i]['Description_Embedding'] for i in indices]
-    vectors = np.array(vectors).astype('float32')
+# def generate_3d_plot(df, query_idx, recs):
 
-    pca = PCA(n_components=3)
-    vectors_3d = pca.fit_transform(vectors)
-
-    plot_data = []
-    for i, idx in enumerate(indices):
-        if i == 0:
-            plot_data.append({
-                'PC1': vectors_3d[i, 0],
-                'PC2': vectors_3d[i, 1],
-                'PC3': vectors_3d[i, 2],
-                'Name': f"[Query] {df.iloc[idx]['name']}",
-                'Type': 'Query',
-                'Similarity': 1.0,
-                'Weighted_Score': 1.0,
-                'Rating': df.iloc[idx]['rating'],
-                'Genres': df.iloc[idx]['genres_list']
-            })
-        else:
-            rec = recs[i-1]
-            plot_data.append({
-                'PC1': vectors_3d[i, 0],
-                'PC2': vectors_3d[i, 1],
-                'PC3': vectors_3d[i, 2],
-                'Name': rec['Name'],
-                'Type': 'Recommendation',
-                'Similarity': rec['Similarity'],
-                'Weighted_Score': rec['Weighted_Score'],
-                'Rating': rec['Rating'],
-                'Genres': rec['Genres']
-            })
-
-    plot_df = pd.DataFrame(plot_data)
-
-    fig = px.scatter_3d(
-        plot_df,
-        x='PC1',
-        y='PC2',
-        z='PC3',
-        color='Type',
-        size=[30 if t == 'Query' else 10 for t in plot_df['Type']],
-        symbol='Type',
-        hover_data=['Name', 'Similarity', 'Weighted_Score', 'Rating', 'Genres'],
-        text='Name',
-        color_discrete_map={'Query': 'red', 'Recommendation': 'blue'},
-        title='Query & Recommendations (PCA 3D)'
-    )
-
-    fig.update_traces(
-        marker=dict(line=dict(width=1, color='DarkSlateGrey')),
-        textfont=dict(size=12, color='black')
-    )
-
-    fig.update_layout(
-        width=800,
-        height=600,
-        title=dict(x=0.5, font=dict(size=20)),
-        scene=dict(
-            xaxis_title="PC1",
-            yaxis_title="PC2",
-            zaxis_title="PC3",
-            xaxis=dict(backgroundcolor='rgba(200, 200, 200, 0.8)'),
-            yaxis=dict(backgroundcolor='rgba(200, 200, 200, 0.8)'),
-            zaxis=dict(backgroundcolor='rgba(200, 200, 200, 0.8)')
-        ),
-        showlegend=True,
-        legend=dict(
-            x=0.8,
-            y=0.9,
-            bgcolor='rgba(255, 255, 255, 0.5)',
-            bordercolor='black',
-            borderwidth=1,
-            xanchor='right',
-            yanchor='top'
-        ),
-        font=dict(family="Arial", size=14),
-        hovermode='closest'
-    )
-    
-    # 确保所有 trace 都显示图例
-    fig.for_each_trace(lambda trace: trace.update(showlegend=True))
-
-    return fig.to_html(full_html=False)
 
 
 # 主页路由（重命名为 home 避免与全局变量 index 冲突）
@@ -231,12 +146,12 @@ def recommend():
         return jsonify({'error': f"Game ID {game_id} not found"}), 404
 
     query_idx = loaded_df.index[loaded_df['appid'] == game_id][0]
-    plot_html = generate_3d_plot(loaded_df, query_idx, recommendations)
+
 
     return jsonify({
         'query_game': loaded_df[loaded_df['appid'] == game_id]['name'].iloc[0],
         'recommendations': recommendations,
-        'plot_html': plot_html
+
     })
 
 if __name__ == '__main__':
