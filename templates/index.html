@@ -10,27 +10,6 @@
 
     <!-- 使用新版 Plotly (v2.18.1), 根据需要调整版本号 -->
     <script src="https://cdn.plot.ly/plotly-2.18.1.min.js"></script>
-
-    <!-- Polyfill：如果浏览器不支持 crypto.randomUUID 则定义一个 -->
-    <script>
-      // 如果不存在 crypto 对象则创建一个空对象
-      if (!window.crypto) {
-        window.crypto = {};
-      }
-      // 如果不支持 randomUUID 则提供一个简单的实现
-      if (!crypto.randomUUID) {
-        crypto.randomUUID = function () {
-          return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-            /[xy]/g,
-            function (c) {
-              var r = (Math.random() * 16) | 0,
-                v = c === "x" ? r : (r & 0x3) | 0x8;
-              return v.toString(16);
-            }
-          );
-        };
-      }
-    </script>
   </head>
   <body>
     <h1>Game Recommendation System</h1>

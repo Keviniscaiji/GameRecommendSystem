@@ -103,15 +103,15 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
           : "No description available.";
         recHtml += `<li><strong>${rec.Name}</strong> (ID: ${
           rec.ID
-        }, Weighted Score: ${rec.Weighted_Score.toFixed(
-          3
-        )}, Similarity: ${rec.Similarity.toFixed(3)})<br>
+        }, Weighted Score: ${rec.Weighted_Score.toFixed(3)},Review Number : ${
+          rec.Num_of_reviews
+        },
+         Similarity: ${rec.Similarity.toFixed(3)})<br>
                       Release: ${
                         rec.Release_Date || "N/A"
                       }, Rating: ${rec.Rating.toFixed(3)}, Genres: ${
           rec.Genres && rec.Genres.length > 0 ? rec.Genres.join(", ") : "N/A"
-        }<br>
-                      Description: ${description}</li>`;
+        }<br>`;
       });
       recHtml += `</ul>`;
 

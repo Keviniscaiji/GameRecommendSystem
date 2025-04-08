@@ -57,7 +57,9 @@ def jaccard_similarity(list1, list2):
     union = len(set1 | set2)
     return intersection / union if union > 0 else 0
 
-def get_weighted_recommendations(game_id, df, index, top_n=10, w_date=0.2, w_rating=0.3, w_genre=0.2):
+import numpy as np
+
+def get_weighted_recommendations(game_id, df, index, top_n=10,w_description = 0.5, w_date=0.2, w_rating=0.3, w_genre=0.3, w_recommend_num=0.2):
     game_idx_list = df.index[df['appid'] == game_id].tolist()
     if len(game_idx_list) == 0:
         return []
@@ -67,23 +69,33 @@ def get_weighted_recommendations(game_id, df, index, top_n=10, w_date=0.2, w_rat
     query_vector = np.array(query_vector).astype('float32').reshape(1, -1)
     faiss.normalize_L2(query_vector)
 
-    distances, indices = index.search(query_vector, top_n + 1)
+    # 从 faiss 索引中检索更多的候选元素（top_n * 100）
+    top_n = min(top_n, len(df) - 1)  # 确保不超过数据集大小
+    distances, indices = index.search(query_vector, min(top_n * 10, len(df) - 1))
 
-    query_release = df.iloc[game_idx]['release_timestamp']
-    query_rating = df.iloc[game_idx]['rating']
     query_genres = df.iloc[game_idx]['genres_list']
-
     recommendations = []
     max_timestamp = df['release_timestamp'].max()
+    max_review_num = df['num_reviews_total'].max()  # 获取 review_num 的最大值
 
-    for i in range(1, top_n + 1):
+    # 对 review_num 应用对数变换
+    log_max_review_num = np.log1p(max_review_num)  # log1p(x) = log(x + 1)
+
+    # 计算所有候选元素的加权分数
+    for i in range(1, len(indices[0])):  # 从 1 开始，跳过查询游戏本身
         idx = indices[0][i]
         sim = distances[0][i]
 
         release_score = (df.iloc[idx]['release_timestamp'] / max_timestamp) if max_timestamp > 0 else 0
         rating_score = df.iloc[idx]['rating']
+        review_num = df.iloc[idx]['num_reviews_total']
+        
+        # 对数变换并归一化 review_num
+        log_review_num = np.log1p(review_num)  # log1p(x) = log(x + 1)
+        review_num_score = (log_review_num / log_max_review_num) if log_max_review_num > 0 else 0
+        
         genre_score = jaccard_similarity(query_genres, df.iloc[idx]['genres_list'])
-        weighted_score = sim + w_date * release_score + w_rating * rating_score + w_genre * genre_score
+        weighted_score = sim * w_description + w_date * release_score + w_rating * rating_score + w_genre * genre_score + w_recommend_num * review_num_score
 
         recommendations.append({
             'Index': int(idx),
@@ -91,13 +103,15 @@ def get_weighted_recommendations(game_id, df, index, top_n=10, w_date=0.2, w_rat
             'Name': df.iloc[idx]['name'],
             'Similarity': float(sim),
             'Weighted_Score': float(weighted_score),
-            'Description': df.iloc[idx]['detailed_description'][:200],
+            'Num_of_reviews': int(review_num),
+            'Description': df.iloc[idx]['short_description'][:200],
             'Release_Date': df.iloc[idx]['release_date'],
             'Rating': float(rating_score),
             'Genres': df.iloc[idx]['genres_list']
         })
 
-    recommendations = sorted(recommendations, key=lambda x: x['Weighted_Score'], reverse=True)
+    # 根据加权分数排序并返回前 top_n 个结果
+    recommendations = sorted(recommendations, key=lambda x: x['Weighted_Score'], reverse=True)[:top_n]
     return recommendations
 
 def generate_3d_plot(df, query_idx, recs):
