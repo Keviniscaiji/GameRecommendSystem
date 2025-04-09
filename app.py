@@ -115,13 +115,15 @@ def get_weighted_recommendations(game_id, df, index, top_n=10,w_description = 0.
     return recommendations
 
 def generate_3d_plot(df, query_idx, recs):
+    # 选取查询游戏和推荐游戏的向量
     indices = [query_idx] + [r['Index'] for r in recs]
-    vectors = [df.iloc[i]['Description_Embedding'] for i in indices]
-    vectors = np.array(vectors).astype('float32')
-
+    vectors = np.array([df.iloc[i]['Description_Embedding'] for i in indices]).astype('float32')
+    
+    # 使用 PCA 将向量降到 3 维
     pca = PCA(n_components=3)
     vectors_3d = pca.fit_transform(vectors)
 
+    # 准备绘图数据
     plot_data = []
     for i, idx in enumerate(indices):
         if i == 0:
@@ -149,9 +151,10 @@ def generate_3d_plot(df, query_idx, recs):
                 'Rating': rec['Rating'],
                 'Genres': rec['Genres']
             })
-
+    
     plot_df = pd.DataFrame(plot_data)
 
+    # 利用 Plotly Express 创建 3D 散点图
     fig = px.scatter_3d(
         plot_df,
         x='PC1',
@@ -166,6 +169,7 @@ def generate_3d_plot(df, query_idx, recs):
         title='Query & Recommendations (PCA 3D)'
     )
 
+    # 设置图表样式以及图例
     fig.update_traces(
         marker=dict(line=dict(width=1, color='DarkSlateGrey')),
         textfont=dict(size=12, color='black')
@@ -178,10 +182,7 @@ def generate_3d_plot(df, query_idx, recs):
         scene=dict(
             xaxis_title="PC1",
             yaxis_title="PC2",
-            zaxis_title="PC3",
-            xaxis=dict(backgroundcolor='rgba(200, 200, 200, 0.8)'),
-            yaxis=dict(backgroundcolor='rgba(200, 200, 200, 0.8)'),
-            zaxis=dict(backgroundcolor='rgba(200, 200, 200, 0.8)')
+            zaxis_title="PC3"
         ),
         showlegend=True,
         legend=dict(
@@ -193,14 +194,50 @@ def generate_3d_plot(df, query_idx, recs):
             xanchor='right',
             yanchor='top'
         ),
-        font=dict(family="Arial", size=14),
         hovermode='closest'
     )
     
-    # 确保所有 trace 都显示图例
-    fig.for_each_trace(lambda trace: trace.update(showlegend=True))
-
     return fig.to_html(full_html=False)
+
+def get_3d_coordinates(df, query_idx, recs):
+    # 收集 Query 游戏和推荐游戏的索引
+    indices = [query_idx] + [r['Index'] for r in recs]
+    # 获取对应向量
+    vectors = [df.iloc[i]['Description_Embedding'] for i in indices]
+    vectors = np.array(vectors).astype('float32')
+
+    # PCA 降至 3 维
+    pca = PCA(n_components=3)
+    vectors_3d = pca.fit_transform(vectors)
+
+    plot_data = []
+    for i, idx in enumerate(indices):
+        if i == 0:
+            plot_data.append({
+                'PC1': float(vectors_3d[i, 0]),
+                'PC2': float(vectors_3d[i, 1]),
+                'PC3': float(vectors_3d[i, 2]),
+                'Name': f"[Query] {df.iloc[idx]['name']}",
+                'Type': 'Query',
+                'Similarity': 1.0,
+                'Weighted_Score': 1.0,
+                'Rating': df.iloc[idx]['rating'],
+                'Genres': df.iloc[idx]['genres_list']
+            })
+        else:
+            rec = recs[i-1]
+            plot_data.append({
+                'PC1': float(vectors_3d[i, 0]),
+                'PC2': float(vectors_3d[i, 1]),
+                'PC3': float(vectors_3d[i, 2]),
+                'Name': rec['Name'],
+                'Type': 'Recommendation',
+                'Similarity': rec['Similarity'],
+                'Weighted_Score': rec['Weighted_Score'],
+                'Rating': rec['Rating'],
+                'Genres': rec['Genres']
+            })
+    return plot_data
 
 
 # 主页路由（重命名为 home 避免与全局变量 index 冲突）
@@ -231,13 +268,15 @@ def recommend():
         return jsonify({'error': f"Game ID {game_id} not found"}), 404
 
     query_idx = loaded_df.index[loaded_df['appid'] == game_id][0]
-    plot_html = generate_3d_plot(loaded_df, query_idx, recommendations)
+    # 获取 PCA 降维后的数据（坐标数据）
+    plot_data = get_3d_coordinates(loaded_df, query_idx, recommendations)
 
     return jsonify({
         'query_game': loaded_df[loaded_df['appid'] == game_id]['name'].iloc[0],
         'recommendations': recommendations,
-        'plot_html': plot_html
+        'plot_data': plot_data
     })
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
