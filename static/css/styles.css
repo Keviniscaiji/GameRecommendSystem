@@ -1,12 +1,33 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 20px;
-  background-color: #f4f4f9;
+  margin: 0;
+  background-color: #f5f7fa; /* 柔和的灰蓝色背景 */
+}
+
+.navbar {
+  background-color: #2c3e50; /* 深蓝灰色导航栏 */
+  overflow: hidden;
+  padding: 10px;
+}
+
+.navbar a {
+  float: left;
+  color: #ecf0f1; /* 浅灰白色文字 */
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.navbar a:hover {
+  background-color: #34495e; /* 稍浅的蓝灰色悬停效果 */
+}
+
+.container {
+  padding: 20px;
 }
 
 h1 {
   text-align: center;
-  color: #333;
+  color: #2c3e50; /* 与导航栏匹配的标题颜色 */
 }
 
 .search-section,
@@ -21,17 +42,19 @@ select {
   padding: 10px;
   margin: 5px;
   font-size: 16px;
+  border: 1px solid #dcdcdc; /* 浅灰色边框 */
+  border-radius: 4px;
 }
 
 button {
-  background-color: #4caf50;
+  background-color: #3498db; /* 清新的蓝色按钮 */
   color: white;
   border: none;
   cursor: pointer;
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: #2980b9; /* 稍深的蓝色悬停效果 */
 }
 
 #gameList {
@@ -39,11 +62,11 @@ button:hover {
   width: 50%;
   padding: 10px;
   background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   max-height: 200px;
   overflow-y: auto;
-  display: none; /* 默认隐藏 */
+  display: none;
 }
 
 .game-item {
@@ -52,15 +75,15 @@ button:hover {
 }
 
 .game-item:hover {
-  background-color: #f0f0f0;
+  background-color: #ecf0f1; /* 与导航文字匹配的浅灰色 */
 }
 
 .result {
   margin-top: 20px;
   padding: 20px;
   background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 ul {
@@ -71,94 +94,7 @@ ul {
 li {
   margin: 10px 0;
 }
+
 #results {
   display: none;
-}
-
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  background-color: #f4f4f9;
-}
-
-.navbar {
-  background-color: #333;
-  overflow: hidden;
-  padding: 10px;
-}
-
-.navbar a {
-  float: left;
-  color: white;
-  padding: 14px 16px;
-  text-decoration: none;
-}
-
-.navbar a:hover {
-  background-color: #575757;
-}
-
-.container {
-  padding: 20px;
-}
-
-h1 {
-  text-align: center;
-  color: #333;
-}
-
-input,
-button {
-  padding: 10px;
-  margin: 5px;
-  font-size: 16px;
-}
-
-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #45a049;
-}
-
-#gameList {
-  margin: 10px auto;
-  width: 50%;
-  padding: 10px;
-  background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-  max-height: 200px;
-  overflow-y: auto;
-  display: none;
-}
-
-.game-item {
-  padding: 5px;
-  cursor: pointer;
-}
-
-.game-item:hover {
-  background-color: #f0f0f0;
-}
-
-.result {
-  margin-top: 20px;
-  padding: 20px;
-  background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  margin: 10px 0;
 }
