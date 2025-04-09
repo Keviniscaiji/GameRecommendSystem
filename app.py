@@ -100,7 +100,8 @@ def get_weighted_recommendations(game_id, df, index, top_n=10,w_description = 0.
         release_score = (df.iloc[idx]['release_timestamp'] / max_timestamp) if max_timestamp > 0 else 0
         rating_score = df.iloc[idx]['rating']
         review_num = df.iloc[idx]['num_reviews_total']
-        
+        if review_num < 0:
+            review_num = 0
         # 对数变换并归一化 review_num
         log_review_num = np.log1p(review_num)  # log1p(x) = log(x + 1)
         review_num_score = (log_review_num / log_max_review_num) if log_max_review_num > 0 else 0

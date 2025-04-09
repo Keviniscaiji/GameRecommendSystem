@@ -1,13 +1,20 @@
-{% extends "base.html" %} {% block title %}Game Recommendation System{% endblock
-%} {% block content %}
-<h1>Game Recommendation System</h1>
+{% extends "base.html" %} {% block title %}User Recommendation{% endblock %} {%
+block content %}
+<h1>User-Based Game Recommendation</h1>
 
-<!-- 搜索游戏部分 -->
 <div class="search-section">
-  <label for="query">Recommend Base on User ID:</label>
-  <input type="text" id="query" name="query" placeholder="Enter user id..." />
-  <button onclick="SearchGameUserID()">Search</button>
-  <div id="gameList"></div>
+  <input type="text" id="query" placeholder="Enter Steam ID..." />
+  <button onclick="searchUserProfile()">Recommend Games</button>
 </div>
 
+<!-- 加载动画 -->
+<div id="loaderContainer" class="loader" style="display: none">
+  <div class="spinner"></div>
+  <p>Loading user profile...</p>
+</div>
+
+<!-- 推荐结果展示区 -->
+<div class="result" id="userGameList" style="display: none"></div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/user_scripts.js') }}"></script>
 {% endblock %}

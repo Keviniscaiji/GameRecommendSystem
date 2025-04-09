@@ -18,6 +18,8 @@
 
     <div class="container">{% block content %}{% endblock %}</div>
 
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    {% block scripts %}
+    <!-- 各页面覆盖这里来引入不同的 JS -->
+    {% endblock %}
   </body>
 </html>

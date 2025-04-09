@@ -1,10 +1,7 @@
 let selectedGameId = null;
-async function SearchGameUserID() {
-  alert("还没做好呢，敬请期待！");
-  return;
-}
 async function searchGames() {
   const query = document.getElementById("query").value;
+
   const resultsDiv = document.getElementById("results"); // Clear previous results/plot
   resultsDiv.innerHTML = "";
   const gameList = document.getElementById("gameList");
