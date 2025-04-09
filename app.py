@@ -245,6 +245,11 @@ def get_3d_coordinates(df, query_idx, recs):
 def home():
     return render_template('index.html')
 
+
+@app.route('/user')
+def contact():
+    return render_template('user.html')
+
 # 搜索游戏路由
 @app.route('/search', methods=['POST'])
 def search():

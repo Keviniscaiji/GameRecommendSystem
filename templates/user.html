@@ -1,0 +1,13 @@
+{% extends "base.html" %} {% block title %}Game Recommendation System{% endblock
+%} {% block content %}
+<h1>Game Recommendation System</h1>
+
+<!-- 搜索游戏部分 -->
+<div class="search-section">
+  <label for="query">Recommend Base on User ID:</label>
+  <input type="text" id="query" name="query" placeholder="Enter user id..." />
+  <button onclick="SearchGameUserID()">Search</button>
+  <div id="gameList"></div>
+</div>
+
+{% endblock %}
