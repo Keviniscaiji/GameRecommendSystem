@@ -7,6 +7,9 @@ import ast
 import plotly.express as px
 import pandas as pd
 from sklearn.decomposition import PCA
+from utils.steam_profile_generator import SteamProfileGenerator
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 
@@ -282,6 +285,23 @@ def recommend():
         'plot_data': plot_data
     })
 
+@app.route('/api/profile', methods=['GET'])
+def get_steam_profile():
+    load_dotenv()
+    STEAM_API_KEY = os.environ.get("STEAM_API_KEY")
+    if not STEAM_API_KEY:
+        raise ValueError("STEAM_API_KEY not set in .env")
+    steam_id = request.args.get('steam_id')
+    if not steam_id:
+        return jsonify({"error": "Steam ID is required"}), 400
+    
+    generator = SteamProfileGenerator(STEAM_API_KEY)
+    profile = generator.generate_user_profile(steam_id, max_games_for_achievements=50)
+    
+    if not profile:
+        return jsonify({"error": "Failed to generate profile"}), 500
+    
+    return jsonify(profile)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
