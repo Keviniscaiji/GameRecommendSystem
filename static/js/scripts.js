@@ -55,72 +55,53 @@ function selectGame(appid, name) {
 
 // --- Recommendation Form Submission ---
 document.getElementById("recommendForm").addEventListener("submit", (e) => {
-  e.preventDefault(); // Prevent default form submission
+  e.preventDefault(); // 防止默认提交
   if (!selectedGameId) {
     alert("Please select a game first.");
     return;
   }
 
-  const resultsDiv = document.getElementById("results"); // Get results div reference
-  resultsDiv.innerHTML = "<p>Loading recommendations and plot...</p>"; // Add loading indicator
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = "<p>Loading recommendations and plot...</p>";
+  resultsDiv.style.display = "block"; // 显示 results div
 
   const formData = new FormData(e.target);
 
   fetch("/recommend", {
-    // Use fetch API
     method: "POST",
     body: formData,
   })
     .then((response) => {
       if (!response.ok) {
-        // Try to parse error message from backend JSON, otherwise use status text
-        return response
-          .json()
-          .then((errData) => {
-            throw new Error(
-              errData.error ||
-                response.statusText ||
-                `HTTP error! Status: ${response.status}`
-            );
-          })
-          .catch(() => {
-            // If parsing error JSON fails, throw a generic error
-            throw new Error(
-              response.statusText || `HTTP error! Status: ${response.status}`
-            );
-          });
+        return response.json().then((errData) => {
+          throw new Error(errData.error || response.statusText);
+        });
       }
-      return response.json(); // Parse success JSON
+      return response.json();
     })
     .then((data) => {
-      // --- Recommendations HTML ---
       let recHtml = `<h2>Query Game: ${data.query_game}</h2><ul>`;
       data.recommendations.forEach((rec) => {
-        // Ensure description exists and safely slice it
         const description = rec.Description
           ? rec.Description.slice(0, 200) +
             (rec.Description.length > 200 ? "..." : "")
           : "No description available.";
         recHtml += `<li><strong>${rec.Name}</strong> (ID: ${
           rec.ID
-        }, Weighted Score: ${rec.Weighted_Score.toFixed(3)},Review Number : ${
+        }, Weighted Score: ${rec.Weighted_Score.toFixed(3)}, Review Number: ${
           rec.Num_of_reviews
-        },
-         Similarity: ${rec.Similarity.toFixed(3)})<br>
+        }, Similarity: ${rec.Similarity.toFixed(3)})<br>
                       Release: ${
                         rec.Release_Date || "N/A"
                       }, Rating: ${rec.Rating.toFixed(3)}, Genres: ${
           rec.Genres && rec.Genres.length > 0 ? rec.Genres.join(", ") : "N/A"
-        }<br>`;
+        }<br>
+                    </li>`;
       });
       recHtml += `</ul>`;
-
-      // Set recommendations HTML first, replacing the loading indicator
       resultsDiv.innerHTML = recHtml;
     })
     .catch((error) => {
-      console.error("Error fetching/processing recommendations:", error);
-      // Display the error in the results div
       resultsDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${error.message}</p>`;
     });
 });

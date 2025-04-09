@@ -71,3 +71,6 @@ ul {
 li {
   margin: 10px 0;
 }
+#results {
+  display: none;
+}
