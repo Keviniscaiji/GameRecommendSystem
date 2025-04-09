@@ -10,9 +10,17 @@ from sklearn.decomposition import PCA
 from utils.steam_profile_generator import SteamProfileGenerator
 from dotenv import load_dotenv
 import os
-
+import random
 app = Flask(__name__)
+# 加载环境变量
+load_dotenv()
+STEAM_API_KEY = os.environ.get("STEAM_API_KEY")
+if not STEAM_API_KEY:
+    raise ValueError("STEAM_API_KEY not set in .env")
 
+
+# 初始化 SteamProfileGenerator
+generator = SteamProfileGenerator(STEAM_API_KEY)
 # 加载数据和 Faiss 索引
 loaded_df = None
 index = None
@@ -287,21 +295,61 @@ def recommend():
 
 @app.route('/api/profile', methods=['GET'])
 def get_steam_profile():
-    load_dotenv()
-    STEAM_API_KEY = os.environ.get("STEAM_API_KEY")
-    if not STEAM_API_KEY:
-        raise ValueError("STEAM_API_KEY not set in .env")
     steam_id = request.args.get('steam_id')
     if not steam_id:
         return jsonify({"error": "Steam ID is required"}), 400
     
-    generator = SteamProfileGenerator(STEAM_API_KEY)
     profile = generator.generate_user_profile(steam_id, max_games_for_achievements=50)
-    
     if not profile:
         return jsonify({"error": "Failed to generate profile"}), 500
-    
     return jsonify(profile)
+
+@app.route('/user_recommend', methods=['POST'])
+def user_recommend():
+    steam_id = request.form.get('query')
+    if not steam_id:
+        return jsonify({"error": "Steam ID is required"}), 400
+
+    # 获取 Steam 个人资料
+    profile = generator.generate_user_profile(steam_id)
+    if not profile or "games" not in profile:
+        return jsonify({"error": "Failed to fetch user profile or no games found"}), 400
+
+    games = profile["games"]
+    total_games = len(games)
+
+    if total_games == 0:
+        return jsonify({"error": "No games found in user's library"}), 400
+
+    # 确定选择游戏数量和每游戏推荐数量
+    base_num = 5  # 目标选择 5 个游戏
+    rec_per_game = 10  # 每游戏默认推荐 10 个
+
+    if total_games < base_num:
+        selected_games = games
+        num_selected = len(selected_games)
+        rec_per_game = max(1, 50 // num_selected)  # 调整推荐数量，尽量接近 50 个总推荐
+    else:
+        selected_games = random.sample(games, base_num)
+
+    # 为每个选中的游戏生成推荐
+    all_recommendations = []
+    for game in selected_games:
+        game_id = game["app_id"]
+        recs = get_weighted_recommendations(game_id, loaded_df, index, top_n=rec_per_game)
+        all_recommendations.extend(recs)
+
+    # 从所有推荐中随机选择 10 个
+    final_recommendations = random.sample(all_recommendations, min(10, len(all_recommendations)))
+
+    # 构造返回数据
+    result = {
+        "user_info": profile["user_info"],
+        "selected_games": [{"name": g["name"], "app_id": g["app_id"]} for g in selected_games],
+        "recommendations": final_recommendations,
+        "message": f"Selected {len(selected_games)} games, each with {rec_per_game} recommendations, final 10 picked from {len(all_recommendations)} total."
+    }
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)

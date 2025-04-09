@@ -5,7 +5,7 @@ import os
 from typing import Dict, List, Any, Optional, Tuple
 import time
 
-
+STEAM_API_KEY = None
 class SteamProfileGenerator:
     def __init__(self, api_key: str):
         """
