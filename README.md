@@ -1,4 +1,4 @@
-# Steam Profile Generator and Game Recommendation System
+# Steam Game Recommendation System
 
 A Flask-based application that generates Steam user profiles and provides game recommendations using precomputed game embeddings.
 
