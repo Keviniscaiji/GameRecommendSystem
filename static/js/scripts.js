@@ -84,7 +84,8 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
       recHtml += `<div class="row g-3">`;
       data.recommendations.forEach((rec) => {
         const description = rec.Description
-          ? rec.Description.slice(0, 200) + (rec.Description.length > 200 ? "..." : "")
+          ? rec.Description.slice(0, 200) +
+            (rec.Description.length > 200 ? "..." : "")
           : "No description available.";
         recHtml += `<div class="col-md-4">
                       <div class="card game-card">
@@ -95,10 +96,21 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
                         <div class="card-body">
                           <h5 class="card-title mb-1">${rec.Name}</h5>
                           <p class="card-text mb-1">${description}</p>
-                          <small class="d-block mb-1">Release: ${rec.Release_Date || "N/A"}, Rating: ${rec.Rating.toFixed(3)}</small>
-                          <small class="d-block mb-1">Weighted Score: ${rec.Weighted_Score.toFixed(3)}, Similarity: ${rec.Similarity.toFixed(3)}</small>
+                          <small class="d-block mb-1">Release: ${
+                            rec.Release_Date || "N/A"
+                          }, Rating: ${rec.Rating.toFixed(3)}</small>
+                          <small class="d-block mb-1">Weighted Score: ${rec.Weighted_Score.toFixed(
+                            3
+                          )}, Similarity: ${rec.Similarity.toFixed(3)}</small>
                           <div>
-                            ${ rec.Genres && rec.Genres.length > 0 ? rec.Genres.map(tag => `<span class="badge tag-badge">${tag}</span>`).join(" ") : "" }
+                            ${
+                              rec.Genres && rec.Genres.length > 0
+                                ? rec.Genres.map(
+                                    (tag) =>
+                                      `<span class="badge tag-badge">${tag}</span>`
+                                  ).join(" ")
+                                : ""
+                            }
                           </div>
                         </div>
                       </div>
@@ -113,7 +125,6 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
       const queryPoints = plotData.filter((pt) => pt.Type === "Query");
       const recPoints = plotData.filter((pt) => pt.Type === "Recommendation");
 
-      // 构造 Query trace
       const traceQuery = {
         x: queryPoints.map((pt) => pt.PC1),
         y: queryPoints.map((pt) => pt.PC2),
@@ -121,12 +132,12 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
         mode: "markers+text",
         type: "scatter3d",
         name: "Query",
-        marker: { size: 12, color: "red" },
+        marker: { size: 12, color: "#ff6b6b" }, // 亮红
         text: queryPoints.map((pt) => pt.Name),
         textposition: "top center",
+        textfont: { color: "#ffffff" },
       };
 
-      // 构造 Recommendation trace
       const traceRec = {
         x: recPoints.map((pt) => pt.PC1),
         y: recPoints.map((pt) => pt.PC2),
@@ -134,22 +145,52 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
         mode: "markers+text",
         type: "scatter3d",
         name: "Recommendation",
-        marker: { size: 8, color: "blue" },
+        marker: { size: 8, color: "#4dabf7" }, // 亮蓝
         text: recPoints.map((pt) => pt.Name),
         textposition: "top center",
+        textfont: { color: "#ffffff" },
       };
 
       const dataPlot = [traceQuery, traceRec];
 
       const layout = {
-        title: "Query & Recommendations (3D Visualization)",
-        scene: {
-          xaxis: { title: "PC1" },
-          yaxis: { title: "PC2" },
-          zaxis: { title: "PC3" },
+        title: {
+          text: "Query & Recommendations (3D Visualization)",
+          font: {
+            family: "Arial, sans-serif",
+            size: 18,
+            color: "#ffffff", // 白色标题文字
+          },
         },
+        paper_bgcolor: "#1e2a38", // 深蓝灰底
+        plot_bgcolor: "#1e2a38",
         width: 800,
         height: 600,
+        scene: {
+          bgcolor: "#1e2a38", // 3D 背景蓝灰色
+          xaxis: {
+            title: { text: "PC1", font: { color: "#e0e0e0" } },
+            color: "#e0e0e0",
+            gridcolor: "#3c4c5a", // 网格线淡蓝灰
+            zerolinecolor: "#5a6e83",
+          },
+          yaxis: {
+            title: { text: "PC2", font: { color: "#e0e0e0" } },
+            color: "#e0e0e0",
+            gridcolor: "#3c4c5a",
+            zerolinecolor: "#5a6e83",
+          },
+          zaxis: {
+            title: { text: "PC3", font: { color: "#e0e0e0" } },
+            color: "#e0e0e0",
+            gridcolor: "#3c4c5a",
+            zerolinecolor: "#5a6e83",
+          },
+        },
+        legend: {
+          font: { color: "#ffffff" },
+          bgcolor: "rgba(30, 42, 56, 0.8)", // 半透明蓝灰
+        },
       };
 
       // 渲染图表到预留的 plot 容器中

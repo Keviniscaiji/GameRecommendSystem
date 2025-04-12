@@ -104,8 +104,6 @@ button:hover {
   margin-top: 20px;
   padding: 10px; /* 由原来的20px改为10px */
   background-color: #0f1a2a; /* 更换背景色 */
-  border: 2px solid #66c0f4; /* 蓝色边框 */
-  border-radius: 8px; /* 圆角边框 */
   color: #c6d4df; /* 保持文字颜色 */
 }
 
