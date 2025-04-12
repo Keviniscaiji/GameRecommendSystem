@@ -107,7 +107,7 @@ def get_weighted_recommendations(game_id, df, index, top_n=10,w_description = 0.
         review_num_score = (log_review_num / log_max_review_num) if log_max_review_num > 0 else 0
         
         genre_score = jaccard_similarity(query_genres, df.iloc[idx]['genres_list'])
-        weighted_score = sim + w_date * release_score + w_rating * rating_score + w_genre * genre_score + w_recommend_num * review_num_score
+        weighted_score = sim * w_description + w_date * release_score + w_rating * rating_score + w_genre * genre_score + w_recommend_num * review_num_score
 
         recommendations.append({
             'Index': int(idx),
