@@ -120,7 +120,9 @@ def get_weighted_recommendations(game_id, df, index, top_n=10,w_description = 0.
             'Description': df.iloc[idx]['short_description'][:200],
             'Release_Date': df.iloc[idx]['release_date'],
             'Rating': float(rating_score),
-            'Genres': df.iloc[idx]['genres_list']
+            'Genres': df.iloc[idx]['genres_list'],
+            'Website': None if pd.isna(df.iloc[idx]['website']) else df.iloc[idx]['website'],
+
         })
 
     # 根据加权分数排序并返回前 top_n 个结果
@@ -323,6 +325,9 @@ def user_recommend():
     if total_games == 0:
         return jsonify({"error": "No games found in user's library"}), 400
 
+    # 提取用户已拥有的游戏 app_id 集合，用于后续过滤推荐
+    user_game_ids = {game["app_id"] for game in games}
+
     # 确定选择游戏数量和每游戏推荐数量
     base_num = 5  # 目标选择 5 个游戏
     rec_per_game = 10  # 每游戏默认推荐 10 个
@@ -334,11 +339,13 @@ def user_recommend():
     else:
         selected_games = random.sample(games, base_num)
 
-    # 为每个选中的游戏生成推荐
+    # 为每个选中的游戏生成推荐，并过滤掉用户自身已有的游戏
     all_recommendations = []
     for game in selected_games:
         game_id = game["app_id"]
         recs = get_weighted_recommendations(game_id, loaded_df, index, top_n=rec_per_game)
+        # 过滤掉推荐中用户已经拥有的游戏
+        recs = [rec for rec in recs if rec.get("app_id") not in user_game_ids]
         all_recommendations.extend(recs)
 
     # 从所有推荐中随机选择 10 个
@@ -351,6 +358,7 @@ def user_recommend():
         "recommendations": final_recommendations,
         "message": f"Selected {len(selected_games)} games, each with {rec_per_game} recommendations, final 10 picked from {len(all_recommendations)} total."
     }
+    
     return jsonify(result)
 
 if __name__ == '__main__':

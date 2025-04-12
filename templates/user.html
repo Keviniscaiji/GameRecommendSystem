@@ -3,19 +3,19 @@ block content %}
 <h1>User-Based Game Recommendation</h1>
 
 <div class="search-section">
-  <input type="text" id="query" placeholder="Enter Steam ID..." />
-  
-<div class="checkbox">
-  <label>
-    <input type="checkbox" id="nicheCheckbox" />
-    Let's Go for more NICHE Games Recommendation!
+  <div>
+    <input type="text" id="query" placeholder="Enter Steam ID..." />
 
-  </label>
-</div>
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" id="nicheCheckbox" />
+        Let's Go for more NICHE Games Recommendation!
+      </label>
+    </div>
+  </div>
 
   <button onclick="searchUserProfile()">Recommend Games</button>
 </div>
-
 <!-- 加载动画 -->
 <div id="loaderContainer" class="loader" style="display: none">
   <div class="spinner"></div>
@@ -25,5 +25,7 @@ block content %}
 <!-- 推荐结果展示区 -->
 <div class="result" id="userGameList" style="display: none"></div>
 {% endblock %} {% block scripts %}
-<script src="{{ url_for('static', filename='js/user_scripts.js') }}"></script>
+<!-- <script src="{{ url_for('static', filename='js/card_util.js') }}"></script>
+<script src="{{ url_for('static', filename='js/user_scripts.js') }}"></script> -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}
