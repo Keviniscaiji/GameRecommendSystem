@@ -96,9 +96,7 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
                       }, Rating: ${rec.Rating.toFixed(3)}, Genres: ${
           rec.Genres && rec.Genres.length > 0 ? rec.Genres.join(", ") : "N/A"
         }<br>
-        image: <img src="${rec.Image_url}" alt="${
-          rec.Name
-        }" style="width: 100px; height: 100px;"><br>
+        "${rec.Image_url}"<br>
                     </li>`;
       });
       recHtml += `</ul>`;
