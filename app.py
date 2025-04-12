@@ -107,12 +107,11 @@ def get_weighted_recommendations(game_id, df, index, top_n=10,w_description = 0.
         review_num_score = (log_review_num / log_max_review_num) if log_max_review_num > 0 else 0
         
         genre_score = jaccard_similarity(query_genres, df.iloc[idx]['genres_list'])
-        weighted_score = sim + w_date * release_score + w_rating * rating_score + w_genre * genre_score + w_recommend_num * review_num_score
+        weighted_score = sim * w_description + w_date * release_score + w_rating * rating_score + w_genre * genre_score + w_recommend_num * review_num_score
 
         recommendations.append({
             'Index': int(idx),
             'ID': int(df.iloc[idx]['appid']),
-            'Image_url': df.iloc[idx]['header_image'],
             'Name': df.iloc[idx]['name'],
             'Similarity': float(sim),
             'Weighted_Score': float(weighted_score),
@@ -339,6 +338,94 @@ def user_recommend():
     for game in selected_games:
         game_id = game["app_id"]
         recs = get_weighted_recommendations(game_id, loaded_df, index, top_n=rec_per_game)
+        all_recommendations.extend(recs)
+
+    # 从所有推荐中随机选择 10 个
+    final_recommendations = random.sample(all_recommendations, min(10, len(all_recommendations)))
+
+    # 构造返回数据
+    result = {
+        "user_info": profile["user_info"],
+        "selected_games": [{"name": g["name"], "app_id": g["app_id"]} for g in selected_games],
+        "recommendations": final_recommendations,
+        "message": f"Selected {len(selected_games)} games, each with {rec_per_game} recommendations, final 10 picked from {len(all_recommendations)} total."
+    }
+    return jsonify(result)
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5001)
+
+
+# === Custom Niche Recommendation ===
+
+def recommend_games(user_embedding, df, faiss_index, top_k=100, niche_mode=False):
+    D, I = faiss_index.search(user_embedding.reshape(1, -1), top_k)
+    candidates = df.iloc[I[0]].copy()
+    candidates["similarity"] = -D[0]
+
+    # 计算额外字段
+    candidates["popularity"] = candidates["positive_ratings"] + candidates["negative_ratings"]
+    candidates["rating"] = candidates["positive_ratings"] / (candidates["popularity"].replace(0, 1))
+    candidates["review_ratio"] = candidates["popularity"] / candidates["owners"].replace(0, 1)
+    candidates["playtime_score"] = candidates["median_playtime"] / 60  # 小时数
+    candidates["achievement_score"] = candidates["achievements"].fillna(0)
+
+    # niche 模式下过滤：高评分 + 少人玩
+    if niche_mode:
+        candidates = candidates[
+            (candidates["rating"] >= 0.85) &
+            (candidates["popularity"] <= 50000)
+        ]
+
+    # 加权得分公式
+    λ1, λ2, λ3, λ4, λ5, λ6 = 1.0, 2.0, 2.0, 0.5, 0.3, 0.00005
+    candidates["score"] = (
+        λ1 * candidates["similarity"] +
+        λ2 * candidates["rating"] +
+        λ3 * candidates["review_ratio"] +
+        λ4 * candidates["playtime_score"] +
+        λ5 * candidates["achievement_score"] -
+        λ6 * candidates["popularity"]
+    )
+
+    return candidates.sort_values("score", ascending=False).head(10).to_dict("records")
+
+
+
+# === Modified Route ===
+@app.route('/user_recommend', methods=['POST'])
+def user_recommend():
+    steam_id = request.form.get('query')
+    if not steam_id:
+        return jsonify({"error": "Steam ID is required"}), 400
+
+    # 获取 Steam 个人资料
+    profile = generator.generate_user_profile(steam_id)
+    if not profile or "games" not in profile:
+        return jsonify({"error": "Failed to fetch user profile or no games found"}), 400
+
+    games = profile["games"]
+    total_games = len(games)
+
+    if total_games == 0:
+        return jsonify({"error": "No games found in user's library"}), 400
+
+    # 确定选择游戏数量和每游戏推荐数量
+    base_num = 5  # 目标选择 5 个游戏
+    rec_per_game = 10  # 每游戏默认推荐 10 个
+
+    if total_games < base_num:
+        selected_games = games
+        num_selected = len(selected_games)
+        rec_per_game = max(1, 50 // num_selected)  # 调整推荐数量，尽量接近 50 个总推荐
+    else:
+        selected_games = random.sample(games, base_num)
+
+    # 为每个选中的游戏生成推荐
+    all_recommendations = []
+    for game in selected_games:
+        game_id = game["app_id"]
+        recs = recommend_games(loaded_df.loc[loaded_df["app_id"] == game_id]["Description_Embedding"].values[0], loaded_df, index, top_k=rec_per_game, niche_mode="niche_mode" in request.form)
         all_recommendations.extend(recs)
 
     # 从所有推荐中随机选择 10 个

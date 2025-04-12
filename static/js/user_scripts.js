@@ -36,6 +36,9 @@ async function searchUserProfile() {
         const formData = new URLSearchParams();
         formData.append("game_id", g.app_id);
         formData.append("top_n", "20");
+        if (document.getElementById("nicheCheckbox").checked) {
+          formData.append("niche_mode", "1");
+        }
 
         const r = await fetch("/recommend", {
           method: "POST",
