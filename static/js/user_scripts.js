@@ -5,28 +5,30 @@ async function searchUserProfile() {
 
   if (!steamId) {
     result.style.display = "block";
-    result.innerHTML = "<p>Please enter a Steam ID!</p>";
+    result.innerHTML = `<div class="alert alert-warning" role="alert">
+      Please enter a Steam ID!
+    </div>`;
     loader.style.display = "none";
     return;
   }
 
-  result.style.display = "none"; // 隐藏旧内容
-  loader.style.display = "flex"; // 显示加载动画
+  result.style.display = "none"; // Hide old content
+  loader.style.display = "flex"; // Show loading spinner
 
   try {
-    const resp = await fetch(
-      `/api/profile?steam_id=${encodeURIComponent(steamId)}`
-    );
+    const resp = await fetch(`/api/profile?steam_id=${encodeURIComponent(steamId)}`);
     const data = await resp.json();
     loader.style.display = "none";
 
     if (!data.games || data.games.length === 0) {
-      result.innerHTML = "<p>No games found in user's library.</p>";
+      result.innerHTML = `<div class="alert alert-info" role="alert">
+        No games found in user's library.
+      </div>`;
       result.style.display = "block";
       return;
     }
 
-    // 处理 Top 5 最多游戏推荐逻辑，并渲染内容
+    // Process top 5 most played games and render recommendations
     const top5 = [...data.games]
       .sort((a, b) => b.playtime_hours - a.playtime_hours)
       .slice(0, 5);
@@ -36,7 +38,7 @@ async function searchUserProfile() {
         const formData = new URLSearchParams();
         formData.append("game_id", g.app_id);
         formData.append("top_n", "20");
-        if (document.getElementById("nicheCheckbox").checked) {
+        if (document.getElementById("nicheCheckbox") && document.getElementById("nicheCheckbox").checked) {
           formData.append("niche_mode", "1");
         }
 
@@ -45,7 +47,6 @@ async function searchUserProfile() {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData.toString(),
         });
-
         if (!r.ok) return [];
         const json = await r.json();
         return json.recommendations || [];
@@ -61,43 +62,48 @@ async function searchUserProfile() {
       .sort(() => Math.random() - 0.5)
       .slice(0, 10);
 
+    // Build HTML output using Bootstrap cards (based on steam.html style)
     let html = `
-      <h2>User Info</h2>
-      <p>Username: ${data.user_info.username}</p>
-      <p>Steam&nbsp;ID: ${data.user_info.steam_id}</p>
-      <h3>Based on your top&nbsp;5 most‑played games, here are 10 picks for you:</h3>
-      <ul>
+      <h2 class="mt-3">User Info</h2>
+      <p><strong>Username:</strong> ${data.user_info.username}</p>
+      <p><strong>Steam ID:</strong> ${data.user_info.steam_id}</p>
+      <h3 class="mt-3">Based on your top 5 most‑played games, here are 10 picks for you:</h3>
+      <div class="row g-3">
     `;
 
     final10.forEach((rec) => {
       const description = rec.Description
-        ? rec.Description.slice(0, 200) +
-          (rec.Description.length > 200 ? "..." : "")
+        ? rec.Description.slice(0, 200) + (rec.Description.length > 200 ? "..." : "")
         : "No description available.";
-
-      html += `<li>
-        <strong>${rec.Name}</strong> (ID: ${
-        rec.ID
-      }, Weighted Score: ${rec.Weighted_Score.toFixed(3)}, 
-        Review Number: ${
-          rec.Num_of_reviews
-        }, Similarity: ${rec.Similarity.toFixed(3)})<br>
-        Release: ${rec.Release_Date || "N/A"}, 
-        Rating: ${rec.Rating ? rec.Rating.toFixed(3) : "N/A"}, 
-        Genres: ${
-          rec.Genres && rec.Genres.length > 0 ? rec.Genres.join(", ") : "N/A"
-        }<br>
-        <em>${description}</em>
-      </li>`;
+      html += `<div class="col-md-4">
+                 <div class="card game-card">
+                   <img src="${rec.Image_url || 'https://via.placeholder.com/350x150?text=No+Image'}" class="card-img-top" alt="${rec.Name}">
+                   <div class="card-body">
+                     <h5 class="card-title mb-1">${rec.Name}</h5>
+                     <p class="card-text mb-1">${description}</p>
+                     <small class="d-block mb-1">Release: ${rec.Release_Date || "N/A"}, Rating: ${rec.Rating ? rec.Rating.toFixed(3) : "N/A"}</small>
+                     <small class="d-block mb-1">Weighted Score: ${rec.Weighted_Score.toFixed(3)}, Similarity: ${rec.Similarity.toFixed(3)}</small>
+                     <div>
+                       ${
+                         rec.Genres && rec.Genres.length > 0
+                           ? rec.Genres.map(tag => `<span class="badge tag-badge">${tag}</span>`).join(" ")
+                           : ""
+                       }
+                     </div>
+                   </div>
+                 </div>
+               </div>`;
     });
-
-    html += `</ul><button onclick="document.getElementById('userGameList').style.display='none'">Close</button>`;
+    html += `</div><button class="btn btn-secondary mt-3" onclick="document.getElementById('userGameList').style.display='none'">Close</button>`;
     result.innerHTML = html;
     result.style.display = "block";
   } catch (e) {
     console.error("Error:", e);
     loader.style.display = "none";
-    result.innerHTML = "<p>There was an error loading the profile.</p>";
+    result.innerHTML = `<div class="alert alert-danger" role="alert">
+      There was an error loading the profile.
+    </div>`;
     result.style.display = "block";
   }
 }
+

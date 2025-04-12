@@ -1,24 +1,27 @@
 body {
-  font-family: Arial, sans-serif;
+  background-color: #1b2838; /* 主要背景色 */
+  color: #c6d4df;
   margin: 0;
-  background-color: #f5f7fa; /* 柔和的灰蓝色背景 */
+  padding: 0;
+  font-size: 0.85rem;
 }
 
 .navbar {
-  background-color: #2c3e50; /* 深蓝灰色导航栏 */
+  background-color: #1b2838; /* 导航栏背景与整体保持一致 */
   overflow: hidden;
   padding: 10px;
 }
 
 .navbar a {
   float: left;
-  color: #ecf0f1; /* 浅灰白色文字 */
+  color: #c6d4df;
   padding: 14px 16px;
   text-decoration: none;
 }
 
 .navbar a:hover {
-  background-color: #34495e; /* 稍浅的蓝灰色悬停效果 */
+  background-color: #66c0f4; /* Steam 蓝色悬停效果 */
+  color: #ffffff;
 }
 
 .container {
@@ -27,7 +30,7 @@ body {
 
 h1 {
   text-align: center;
-  color: #2c3e50; /* 与导航栏匹配的标题颜色 */
+  color: #c6d4df;
 }
 
 .search-section,
@@ -36,37 +39,56 @@ h1 {
   margin-bottom: 20px;
 }
 
+.game-card {
+  background-color: #2a475e; /* 卡片使用深蓝色，与整体背景形成层次 */
+  border: none;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  color: #fff;
+  font-size: 0.9rem;
+}
+.game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
 input,
 button,
 select {
   padding: 10px;
   margin: 5px;
   font-size: 16px;
-  border: 1px solid #dcdcdc; /* 浅灰色边框 */
+  border: 1px solid #2a475e;
   border-radius: 4px;
+  background-color: #1b2838; /* 统一使用背景色 */
+  color: #c6d4df;
 }
 
 button {
-  background-color: #3498db; /* 清新的蓝色按钮 */
+  background-color: #66c0f4; /* 蓝色按钮 */
   color: white;
   border: none;
   cursor: pointer;
 }
 
 button:hover {
-  background-color: #2980b9; /* 稍深的蓝色悬停效果 */
+  background-color: #66a5d9; /* 略深的蓝色悬停效果 */
 }
 
 #gameList {
   margin: 10px auto;
   width: 50%;
   padding: 10px;
-  background-color: white;
+  background-color: #1b2838; /* 下拉列表背景 */
+  border: 1px solid #2a475e;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   max-height: 200px;
   overflow-y: auto;
   display: none;
+  color: #c6d4df;
 }
 
 .game-item {
@@ -75,15 +97,16 @@ button:hover {
 }
 
 .game-item:hover {
-  background-color: #ecf0f1; /* 与导航文字匹配的浅灰色 */
+  background-color: #2a475e;
 }
 
 .result {
   margin-top: 20px;
-  padding: 20px;
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 10px; /* 由原来的20px改为10px */
+  background-color: #0f1a2a; /* 更换背景色 */
+  border: 2px solid #66c0f4; /* 蓝色边框 */
+  border-radius: 8px; /* 圆角边框 */
+  color: #c6d4df; /* 保持文字颜色 */
 }
 
 ul {
@@ -94,7 +117,6 @@ ul {
 li {
   margin: 10px 0;
 }
-/* 加载器容器，居中显示 */
 
 .loader {
   display: flex;
@@ -106,8 +128,8 @@ li {
 }
 
 .spinner {
-  border: 8px solid #f3f3f3;
-  border-top: 8px solid #3498db;
+  border: 8px solid #2a475e;
+  border-top: 8px solid #66c0f4;
   border-radius: 50%;
   width: 50px;
   height: 50px;

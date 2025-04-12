@@ -79,25 +79,30 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
       return response.json();
     })
     .then((data) => {
-      // 构建推荐列表 HTML
-      let recHtml = `<h2>Query Game: ${data.query_game}</h2><ul>`;
+      // 构建推荐列表 HTML 使用 Bootstrap 卡片（参考 steam.html）
+      let recHtml = `<h2 class="mt-3">Query Game: ${data.query_game}</h2>`;
+      recHtml += `<div class="row g-3">`;
       data.recommendations.forEach((rec) => {
         const description = rec.Description
-          ? rec.Description.slice(0, 200) +
-            (rec.Description.length > 200 ? "..." : "")
+          ? rec.Description.slice(0, 200) + (rec.Description.length > 200 ? "..." : "")
           : "No description available.";
-        recHtml += `<li><strong>${rec.Name}</strong> (ID: ${
-          rec.ID
-        }, Weighted Score: ${rec.Weighted_Score.toFixed(3)}, Review Number: ${
-          rec.Num_of_reviews
-        }, Similarity: ${rec.Similarity.toFixed(3)})<br>
-                      Release: ${
-                        rec.Release_Date || "N/A"
-                      }, Rating: ${rec.Rating.toFixed(3)}, Genres: ${
-          rec.Genres && rec.Genres.length > 0 ? rec.Genres.join(", ") : "N/A"
-        }<br>
-        "${rec.Image_url}"<br>
-                    </li>`;
+        recHtml += `<div class="col-md-4">
+                      <div class="card game-card">
+                        <img
+                          src="${rec.Image_url}"
+                          class="card-img-top"
+                          alt="Game Cover">
+                        <div class="card-body">
+                          <h5 class="card-title mb-1">${rec.Name}</h5>
+                          <p class="card-text mb-1">${description}</p>
+                          <small class="d-block mb-1">Release: ${rec.Release_Date || "N/A"}, Rating: ${rec.Rating.toFixed(3)}</small>
+                          <small class="d-block mb-1">Weighted Score: ${rec.Weighted_Score.toFixed(3)}, Similarity: ${rec.Similarity.toFixed(3)}</small>
+                          <div>
+                            ${ rec.Genres && rec.Genres.length > 0 ? rec.Genres.map(tag => `<span class="badge tag-badge">${tag}</span>`).join(" ") : "" }
+                          </div>
+                        </div>
+                      </div>
+                    </div>`;
       });
       recHtml += `</ul>`;
       resultsDiv.innerHTML = recHtml;
