@@ -38,8 +38,6 @@ echo "STEAM_API_KEY=your-steam-api-key-here" > .env
 
 - **Do not** commit the `.env` file to version control.
 - Ensure `.env` is listed in `.gitignore`.
-- The required `python-dotenv` package is included in `requirements.txt`.
-
 
 ### 3. **Install Dependencies**
 Ensure you have Python 3 installed. Then run:
