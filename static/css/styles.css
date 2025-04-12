@@ -142,3 +142,9 @@ li {
     transform: rotate(360deg);
   }
 }
+.navbar-divider {
+  border: none;
+  height: 2px;
+  background-color: #66c0f4; /* Steam 蓝色 */
+  margin: 0;
+}
