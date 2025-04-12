@@ -10,16 +10,36 @@ Download the embedding file from the following link:
 After downloading, place the file in the root directory of your project.
 
 ### 2. **Set Up Environment Variables**
-This project uses a `.env` file to securely manage sensitive information like the Steam API key. Follow these steps:
-- Create a file named `.env` in the root directory of your project.
-- Add your Steam API key to the `.env` file in the following format:
-  ```
-  STEAM_API_KEY=your-steam-api-key-here
-  ```
-  Replace `your-steam-api-key-here` with your actual Steam Web API key (get it from [Steam Web API](https://steamcommunity.com/dev/apikey)).
-- Ensure you have the `python-dotenv` package installed (included in `requirements.txt`).
 
-**Note**: Do not commit the `.env` file to version control. Add it to `.gitignore` to keep your API key private.
+This project uses a `.env` file to securely manage sensitive information like the Steam API key. Follow the steps below:
+
+#### 📄 Manual Setup
+
+1. In the root directory of your project, create a `.env` file.
+2. Add your Steam API key in the following format:
+
+   ```env
+   STEAM_API_KEY=your-steam-api-key-here
+   ```
+
+   Replace `your-steam-api-key-here` with your actual Steam Web API key. You can obtain one from the [Steam Web API](https://steamcommunity.com/dev/apikey).
+
+#### ⚡ Quick Setup (Recommended)
+
+Run this command in your terminal:
+
+```bash
+echo "STEAM_API_KEY=your-steam-api-key-here" > .env
+```
+
+> Make sure to replace the placeholder with your actual API key.
+
+#### 🚫 Important
+
+- **Do not** commit the `.env` file to version control.
+- Ensure `.env` is listed in `.gitignore`.
+- The required `python-dotenv` package is included in `requirements.txt`.
+
 
 ### 3. **Install Dependencies**
 Ensure you have Python 3 installed. Then run:
