@@ -186,6 +186,35 @@ def get_weighted_recommendations(game_id, df, index, top_n=10,
         recommendations = recommendations[:top_n]
     return recommendations
 
+def recommend_games_v2(user_embedding, df, faiss_index, top_k=100, niche_mode=False):
+    D, I = faiss_index.search(user_embedding.reshape(1, -1), top_k)
+    candidates = df.iloc[I[0]].copy()
+    candidates["similarity"] = -D[0]
+
+    candidates["popularity"] = candidates["positive_ratings"] + candidates["negative_ratings"]
+    candidates["rating"] = candidates["positive_ratings"] / candidates["popularity"].replace(0, 1)
+    candidates["review_ratio"] = candidates["popularity"] / candidates["owners"].replace(0, 1)
+    candidates["playtime_score"] = candidates["median_playtime"] / 60
+    candidates["achievement_score"] = candidates["achievements"].fillna(0)
+
+    if niche_mode:
+        candidates = candidates[
+            (candidates["rating"] >= 0.85) &
+            (candidates["popularity"] <= 50000)
+            ]
+
+    λ1, λ2, λ3, λ4, λ5, λ6 = 0.5, 2.8, 2.1, 0.55, 0.3, 0.00005
+    candidates["score"] = (
+            λ1 * candidates["similarity"] +
+            λ2 * candidates["rating"] +
+            λ3 * candidates["review_ratio"] +
+            λ4 * candidates["playtime_score"] +
+            λ5 * candidates["achievement_score"] -
+            λ6 * candidates["popularity"]
+    )
+
+    return candidates.sort_values("score", ascending=False).head(10).to_dict("records")
+
 def generate_3d_plot(df, query_idx, recs):
     # 选取查询游戏和推荐游戏的向量
     indices = [query_idx] + [r['Index'] for r in recs]
@@ -359,6 +388,7 @@ def get_steam_profile():
 
 @app.route('/user_recommend', methods=['POST'])
 def user_recommend():
+    niche_mode = "niche_mode" in request.form
     steam_id = request.form.get('query')
     if not steam_id:
         return jsonify({"error": "Steam ID is required"}), 400
@@ -373,7 +403,7 @@ def user_recommend():
     if total_games == 0:
         return jsonify({"error": "No games found in user's library"}), 400
 
-    # 提取用户已拥有游戏的 app_id 集合，用于过滤推荐（注意：推荐字典里的键为 "ID"）
+    # 提取用户已拥有游戏的 app_id 集合，用于过滤推荐
     user_game_ids = {game["app_id"] for game in games}
 
     base_num = 5      # 目标选择 5 个游戏
@@ -389,8 +419,21 @@ def user_recommend():
     all_recommendations = []
     for game in selected_games:
         game_id = game["app_id"]
-        recs = get_weighted_recommendations(game_id, loaded_df, index, top_n=rec_per_game)
-        # 过滤掉用户已经拥有的游戏（注意使用推荐字典中 "ID" 键）
+
+        if niche_mode:
+            recs = recommend_games_v2(
+                loaded_df.loc[loaded_df["app_id"] == game_id]["Description_Embedding"].values[0],
+                loaded_df,
+                index,
+                top_k=rec_per_game,
+                niche_mode=True
+            )
+        else:
+            recs = get_weighted_recommendations(
+                game_id, loaded_df, index, top_n=rec_per_game
+            )
+
+        # 过滤掉用户已拥有的游戏
         recs = [rec for rec in recs if rec.get("ID") not in user_game_ids]
         all_recommendations.extend(recs)
 
