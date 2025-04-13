@@ -279,8 +279,8 @@ document.getElementById("recommendForm").addEventListener("submit", (e) => {
         },
         paper_bgcolor: "#1e2a38",
         plot_bgcolor: "#1e2a38",
-        width: 800,
-        height: 600,
+        width: 1200,
+        height: 800,
         scene: {
           bgcolor: "#1e2a38",
           xaxis: {
