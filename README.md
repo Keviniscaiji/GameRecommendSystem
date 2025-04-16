@@ -9,7 +9,7 @@ A Flask-based application that generates Steam user profiles and provides game r
 ### 1. **Clone the Repository**
 
 ```bash
-git clone https://github.com/your-username/steam-game-recommender.git
+git clone [https://github.com/your-username/steam-game-recommender.git](https://github.com/Keviniscaiji/GameRecommendSystem.git)
 cd steam-game-recommender
 ```
 
